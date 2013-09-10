@@ -134,10 +134,10 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
     centerPanel.bringToFront();
 
-    if (rightSidePanel instanceof DMSlidePanelView) {
+    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
     }
-    if (leftSidePanel instanceof DMSlidePanelView) {
+    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
     }
 
@@ -171,64 +171,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       return;
     }
     // Init gesture director
-    gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-      float oldPosition = 0.0f;
-
-      @Override
-      public boolean onDown(MotionEvent e) {
-        clearAnimation();
-        if (null == centerPanel) {
-          initPanels();
-        }
-        oldPosition = e.getX();
-        return true;
-      }
-
-      @Override
-      public boolean onScroll(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        int offset = (int) (e2.getX() - oldPosition);
-        centerPanelTranslation.left += offset;
-        centerPanelTranslation.right += offset;
-        centerPanelTranslation.update(centerPanel);
-
-        if (!sidebarFixed) {
-          // Calc left panel position
-          leftSidePanelTranslation.left += offset;
-          leftSidePanelTranslation.right += offset;
-
-          if (leftSidePanelTranslation.left > 0 || centerPanelTranslation.left > leftSidePanelTranslation.right) {
-            leftSidePanelTranslation.right = getLeftPanelWidth();
-            leftSidePanelTranslation.left = 0;
-          } else if (leftSidePanelTranslation.right > centerPanelTranslation.left) {
-            int off = leftSidePanelTranslation.right - centerPanelTranslation.left;
-            leftSidePanelTranslation.right = centerPanelTranslation.left;
-            leftSidePanelTranslation.left -= off;
-          }
-
-          leftSidePanelTranslation.update(leftSidePanel);
-
-          // Calc right panel position
-          rightSidePanelTranslation.left += offset;
-          rightSidePanelTranslation.right += offset;
-
-          int width = getMeasuredWidth();
-          if (rightSidePanelTranslation.right < width || centerPanelTranslation.right < rightSidePanelTranslation.left) {
-            rightSidePanelTranslation.right = width;
-            rightSidePanelTranslation.left = width - getRightPanelWidth();
-          } else if (centerPanelTranslation.right > rightSidePanelTranslation.left) {
-            int off = centerPanelTranslation.right - rightSidePanelTranslation.left;
-            rightSidePanelTranslation.right += off;
-            rightSidePanelTranslation.left = centerPanelTranslation.right;
-          }
-
-          rightSidePanelTranslation.update(rightSidePanel);
-        }
-
-        oldPosition = e2.getX();
-        updatePanelsPosition();
-        return true;
-      }
-    });
+    gestureDetector = new GestureDetector(getContext(), new SwipeStrictGesture());
 
     OnTouchListener touchListener = new OnTouchListener() {
       @Override
@@ -288,10 +231,10 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   public void setSidebarFixed(boolean fixed) {
     sidebarFixed = fixed;
 
-    if (rightSidePanel instanceof DMSlidePanelView) {
+    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
     }
-    if (leftSidePanel instanceof DMSlidePanelView) {
+    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
     }
   }
@@ -334,54 +277,50 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     return null != rightSidePanel && View.VISIBLE == rightSidePanel.getVisibility();
   }
 
+  /**
+   * Display left sidebar panel
+   * @param show boolean
+   * @param animated boolean
+   */
   public void showLeftSideBar(boolean show, boolean animated) {
     initPanels();
     if (null == leftSidePanel) {
-      return;
+      show = false;
+    } else {
+      leftSidePanel.setVisibility(View.VISIBLE);
     }
 
-    leftSidePanel.setVisibility(View.VISIBLE);
-
-    if (leftSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) leftSidePanel).onBeforeGoingInto(show);
-    }
-    if (rightSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) rightSidePanel).onBeforeGoingInto(false);
-    }
-    if (centerPanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(!show);
-    }
-
+    onBeforeShowLeftSidebar(show);
     moveSidebars(getLeftSidePanelTranslation(show),
             getRightSidePanelTranslation(false),
             getCenterPanelTranslation(!show, false),
             animated);
   }
 
+  /**
+   * Show right sidebar panel
+   * @param show boolean
+   * @param animated boolean
+   */
   public void showRightSideBar(boolean show, boolean animated) {
     initPanels();
     if (null == rightSidePanel) {
-      return;
+      show = false;
+    } else {
+      rightSidePanel.setVisibility(View.VISIBLE);
     }
 
-    rightSidePanel.setVisibility(View.VISIBLE);
-
-    if (leftSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) leftSidePanel).onBeforeGoingInto(false);
-    }
-    if (rightSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) rightSidePanel).onBeforeGoingInto(show);
-    }
-    if (centerPanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(show);
-    }
-
+    onBeforeShowRightSidebar(show);
     moveSidebars(getLeftSidePanelTranslation(false),
             getRightSidePanelTranslation(show),
             getCenterPanelTranslation(!show, true),
             animated);
   }
 
+  /**
+   * Show central panel
+   * @param animated boolean
+   */
   public void showCentralPanel(boolean animated) {
     if (isLeftSideBarVisible()) {
       showLeftSideBar(false, animated);
@@ -390,10 +329,18 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     }
   }
 
+  /**
+   * Left sidebar panel display toggle
+   * @param animated boolean
+   */
   public void toggleLeft(boolean animated) {
     showLeftSideBar(!isLeftSideBarVisible(), animated);
   }
 
+  /**
+   * Right sidebar panel display toggle
+   * @param animated boolean
+   */
   public void toggleRight(boolean animated) {
     showRightSideBar(!isRightSideBarVisible(), animated);
   }
@@ -533,17 +480,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     clearAnimation();
 
     // End events
-    boolean shownLeft = View.VISIBLE == leftSidePanel.getVisibility();
-    boolean shownRight = View.VISIBLE == leftSidePanel.getVisibility();
-    if (leftSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) leftSidePanel).onAfterGoingInto(shownLeft);
-    }
-    if (rightSidePanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) rightSidePanel).onBeforeGoingInto(shownRight);
-    }
-    if (centerPanel instanceof DMSlidePanelBaseView) {
-      ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(!shownLeft && !shownRight);
-    }
+    onAnimationEnd();
   }
 
   /**
@@ -586,9 +523,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected void updatePanelsPositionAnimation() {
     long oldDuration = slideAnimationDuration;
     slideAnimationDuration /= 2;
-    if (View.VISIBLE == leftSidePanel.getVisibility()) {
+    if (null != leftSidePanel && View.VISIBLE == leftSidePanel.getVisibility()) {
       showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 3, true);
-    } else if (View.VISIBLE == rightSidePanel.getVisibility()) {
+    } else if (null != rightSidePanel && View.VISIBLE == rightSidePanel.getVisibility()) {
       showRightSideBar(getMeasuredWidth() - centerPanelTranslation.right >= getLeftPanelWidth() / 3, true);
     } else {
       // If invisible panels
@@ -604,18 +541,21 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     }
 
     // Restore defaults
-    if (rightSidePanel instanceof DMSlidePanelView) {
+    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
     }
-    if (leftSidePanel instanceof DMSlidePanelView) {
+    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelView) {
       ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
     }
 
     slideAnimationDuration = oldDuration;
+
+    // Event
+    onAfterShowSidebar();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Animation events & click
+  /// Events
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   @Override
@@ -640,9 +580,117 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     }
   }
 
+  protected void onBeforeShowLeftSidebar(boolean show) {
+    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) leftSidePanel).onBeforeGoingInto(show);
+    }
+    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) rightSidePanel).onBeforeGoingInto(false);
+    }
+    if (centerPanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(!show);
+    }
+  }
+
+  protected void onBeforeShowRightSidebar(boolean show) {
+    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) leftSidePanel).onBeforeGoingInto(false);
+    }
+    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) rightSidePanel).onBeforeGoingInto(show);
+    }
+    if (centerPanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(show);
+    }
+  }
+
+  protected void onAfterShowSidebar() {
+    boolean shownLeft = View.VISIBLE == leftSidePanel.getVisibility();
+    boolean shownRight = View.VISIBLE == leftSidePanel.getVisibility();
+    if (leftSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) leftSidePanel).onAfterGoingInto(shownLeft);
+    }
+    if (rightSidePanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) rightSidePanel).onAfterGoingInto(shownRight);
+    }
+    if (centerPanel instanceof DMSlidePanelBaseView) {
+      ((DMSlidePanelBaseView) centerPanel).onAfterGoingInto(!shownLeft && !shownRight);
+    }
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Swipe gesture
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  class SwipeStrictGesture extends GestureDetector.SimpleOnGestureListener {
+    float oldPosition = 0.0f;
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+      clearAnimation();
+      if (null == centerPanel) {
+        initPanels();
+      }
+      oldPosition = e.getX();
+      return true;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+      int width = getMeasuredWidth();
+      int offset = (int) (e2.getX() - oldPosition);
+
+      // Update central panel
+      centerPanelTranslation.left += offset;
+      centerPanelTranslation.right += offset;
+
+      if ((null == leftSidePanel && centerPanelTranslation.left > 0)
+              || (null == rightSidePanel && centerPanelTranslation.left < 0)) {
+        centerPanelTranslation.right = width;
+        centerPanelTranslation.left = 0;
+      }
+
+      centerPanelTranslation.update(centerPanel);
+
+      if (!sidebarFixed) {
+        // Calc left panel position
+        leftSidePanelTranslation.left += offset;
+        leftSidePanelTranslation.right += offset;
+
+        if (leftSidePanelTranslation.left > 0 || centerPanelTranslation.left > leftSidePanelTranslation.right) {
+          leftSidePanelTranslation.right = getLeftPanelWidth();
+          leftSidePanelTranslation.left = 0;
+        }
+        if (leftSidePanelTranslation.right > centerPanelTranslation.left) {
+          int off = leftSidePanelTranslation.right - centerPanelTranslation.left;
+          leftSidePanelTranslation.right = centerPanelTranslation.left;
+          leftSidePanelTranslation.left -= off;
+        }
+
+        leftSidePanelTranslation.update(leftSidePanel);
+
+        // Calc right panel position
+        rightSidePanelTranslation.left += offset;
+        rightSidePanelTranslation.right += offset;
+
+        if (rightSidePanelTranslation.right < width || centerPanelTranslation.right < rightSidePanelTranslation.left) {
+          rightSidePanelTranslation.right = width;
+          rightSidePanelTranslation.left = width - getRightPanelWidth();
+        }
+        if (centerPanelTranslation.right > rightSidePanelTranslation.left) {
+          int off = centerPanelTranslation.right - rightSidePanelTranslation.left;
+          rightSidePanelTranslation.right += off;
+          rightSidePanelTranslation.left = centerPanelTranslation.right;
+        }
+
+        rightSidePanelTranslation.update(rightSidePanel);
+      }
+
+      oldPosition = e2.getX();
+      updatePanelsPosition();
+      return true;
+    }
+  }
 
   abstract class SwipeGestureDetector extends GestureDetector.SimpleOnGestureListener {
 
@@ -680,5 +728,13 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     public abstract void swipe2Left();
 
     public abstract void swipe2Right();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Delegate interface
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  public interface Delegate {
+    // TODO ...
   }
 }

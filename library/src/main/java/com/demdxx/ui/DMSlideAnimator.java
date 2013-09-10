@@ -115,12 +115,14 @@ class DMSlideAnimator extends Animation
     }
 
     Translation updateSize(View v) {
-      ViewGroup.LayoutParams l = v.getLayoutParams();
-      l.width = (right + 0xffffff) - (left + 0xffffff);
-      if (l instanceof FrameLayout.LayoutParams) {
-        ((FrameLayout.LayoutParams) l).leftMargin = left;
+      if (null != v) {
+        ViewGroup.LayoutParams l = v.getLayoutParams();
+        l.width = (right + 0xffffff) - (left + 0xffffff);
+        if (l instanceof FrameLayout.LayoutParams) {
+          ((FrameLayout.LayoutParams) l).leftMargin = left;
+        }
+        v.requestLayout();
       }
-      v.requestLayout();
       return this;
     }
 
