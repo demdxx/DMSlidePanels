@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="DMSidePanelsView">
+    <attr name="fixed" format="boolean" />
+    <attr name="duration" format="integer|reference" />
+    <attr name="swipe">
+      <enum name="none" value="0x0000" />
+      <enum name="arbitrary" value="0x0001" />
+      <enum name="strict" value="0x0002" />
+    </attr>
+  </declare-styleable>
+</resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.demdxx.ui.DMSlidePanelsView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/panels">
+  <com.demdxx.ui.DMSlidePanelLeftView android:layout_width="match_parent"
+                                      android:layout_height="match_parent">
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#f00">
+      <Button android:id="@+id/button2"
+              android:text="Hide"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content" />
+      <TextView android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="Menu 1" />
+      <TextView android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="Menu 2" />
+    </LinearLayout>
+  </com.demdxx.ui.DMSlidePanelLeftView>
+  <com.demdxx.ui.DMSlidePanelRightView android:layout_width="match_parent"
+                                       android:layout_height="match_parent">
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#ffffbb36">
+    </LinearLayout>
+  </com.demdxx.ui.DMSlidePanelRightView>
+  <com.demdxx.ui.DMSlidePanelCenterView android:layout_width="match_parent"
+                                        android:layout_height="match_parent">
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="@android:color/darker_gray">
+      <Button android:id="@+id/button_slide"
+              android:text="Slide"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content" />
+    </LinearLayout>
+  </com.demdxx.ui.DMSlidePanelCenterView>
+</com.demdxx.ui.DMSlidePanelsView>
