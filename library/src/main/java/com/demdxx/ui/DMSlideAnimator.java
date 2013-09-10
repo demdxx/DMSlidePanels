@@ -108,7 +108,9 @@ class DMSlideAnimator extends Animation
     }
 
     Translation update(View v) {
-      v.layout(left, top, right, bottom);
+      if (null != v) {
+        v.layout(left, top, right, bottom);
+      }
       return this;
     }
 

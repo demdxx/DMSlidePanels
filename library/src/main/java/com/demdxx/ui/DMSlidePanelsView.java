@@ -158,6 +158,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       initSwipeEvents();
     } else if (2 == swipe) {
       initStrictSwipeEvents();
+    } else {
+      setOnTouchListener(null);
     }
   }
 
@@ -188,6 +190,40 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         centerPanelTranslation.left += offset;
         centerPanelTranslation.right += offset;
         centerPanelTranslation.update(centerPanel);
+
+        if (!sidebarFixed) {
+          // Calc left panel position
+          leftSidePanelTranslation.left += offset;
+          leftSidePanelTranslation.right += offset;
+
+          if (leftSidePanelTranslation.left > 0 || centerPanelTranslation.left > leftSidePanelTranslation.right) {
+            leftSidePanelTranslation.right = getLeftPanelWidth();
+            leftSidePanelTranslation.left = 0;
+          } else if (leftSidePanelTranslation.right > centerPanelTranslation.left) {
+            int off = leftSidePanelTranslation.right - centerPanelTranslation.left;
+            leftSidePanelTranslation.right = centerPanelTranslation.left;
+            leftSidePanelTranslation.left -= off;
+          }
+
+          leftSidePanelTranslation.update(leftSidePanel);
+
+          // Calc right panel position
+          rightSidePanelTranslation.left += offset;
+          rightSidePanelTranslation.right += offset;
+
+          int width = getMeasuredWidth();
+          if (rightSidePanelTranslation.right < width || centerPanelTranslation.right < rightSidePanelTranslation.left) {
+            rightSidePanelTranslation.right = width;
+            rightSidePanelTranslation.left = width - getRightPanelWidth();
+          } else if (centerPanelTranslation.right > rightSidePanelTranslation.left) {
+            int off = centerPanelTranslation.right - rightSidePanelTranslation.left;
+            rightSidePanelTranslation.right += off;
+            rightSidePanelTranslation.left = centerPanelTranslation.right;
+          }
+
+          rightSidePanelTranslation.update(rightSidePanel);
+        }
+
         oldPosition = e2.getX();
         updatePanelsPosition();
         return true;
@@ -243,6 +279,39 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     };
 
     setOnTouchListener(touchListener);
+  }
+
+  /**
+   * Set fixed state
+   * @param fixed boolean
+   */
+  public void setSidebarFixed(boolean fixed) {
+    sidebarFixed = fixed;
+
+    if (rightSidePanel instanceof DMSlidePanelView) {
+      ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
+    }
+    if (leftSidePanel instanceof DMSlidePanelView) {
+      ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
+    }
+  }
+
+  /**
+   * Set animation duration
+   * @param duration milliseconds
+   */
+  public void setSlideAnimationDuration(long duration) {
+    slideAnimationDuration = duration;
+  }
+
+  /**
+   * Set swipe type
+   * @param type 0 - none, 1 - arbitrary, 2 - strict
+   */
+  public void setSwipe(int type) {
+    swipe = type;
+    gestureDetector = null;
+    initEvents();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,12 +479,12 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         leftSidePanelTranslation = getLeftSidePanelTranslation(true);
         rightSidePanelTranslation = getRightSidePanelTranslation(true);
         animator = new DMSlideAnimator(leftSidePanel, leftSidePanelTranslation, leftSidePanelTranslation,
-                rightSidePanel, rightSidePanelTranslation, rightSidePanelTranslation,
-                centerPanel, centerPanelTranslation.copy(), center);
+                                       rightSidePanel, rightSidePanelTranslation, rightSidePanelTranslation,
+                                       centerPanel, centerPanelTranslation.copy(), center);
       } else {
         animator = new DMSlideAnimator(leftSidePanel, leftSidePanelTranslation.copy(), left,
-                rightSidePanel, rightSidePanelTranslation.copy(), right,
-                centerPanel, centerPanelTranslation.copy(), center);
+                                       rightSidePanel, rightSidePanelTranslation.copy(), right,
+                                       centerPanel, centerPanelTranslation.copy(), center);
       }
 
       // update translation
@@ -484,10 +553,10 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     if (null != leftSidePanel) {
       if (centerPanelTranslation.left > 0) {
         leftSidePanel.setVisibility(View.VISIBLE);
-        if (leftSidePanel instanceof DMSlidePanelBaseView) {
+        if (!sidebarFixed && leftSidePanel instanceof DMSlidePanelBaseView) {
           ((DMSlidePanelBaseView) leftSidePanel)
                   .updateByCentralTranslation(
-                          sidebarFixed ? getLeftSidePanelTranslation(true) : leftSidePanelTranslation,
+                          getLeftSidePanelTranslation(true),
                           centerPanelTranslation);
           leftSidePanel.invalidate();
         }
@@ -498,10 +567,10 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     if (null != rightSidePanel) {
       if (centerPanelTranslation.right < getMeasuredWidth()) {
         rightSidePanel.setVisibility(View.VISIBLE);
-        if (rightSidePanel instanceof DMSlidePanelBaseView) {
+        if (!sidebarFixed && rightSidePanel instanceof DMSlidePanelBaseView) {
           ((DMSlidePanelBaseView) rightSidePanel)
                   .updateByCentralTranslation(
-                          sidebarFixed ? getRightSidePanelTranslation(true) : rightSidePanelTranslation,
+                          getRightSidePanelTranslation(true),
                           centerPanelTranslation);
           rightSidePanel.invalidate();
         }
@@ -522,8 +591,26 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     } else if (View.VISIBLE == rightSidePanel.getVisibility()) {
       showRightSideBar(getMeasuredWidth() - centerPanelTranslation.right >= getLeftPanelWidth() / 3, true);
     } else {
-      showCentralPanel(true);
+      // If invisible panels
+      int left = centerPanelTranslation.left;
+      int right = getMeasuredWidth() - centerPanelTranslation.right;
+      if (left > right) {
+        showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 3, true);
+      } else if (left < right) {
+        showRightSideBar(right >= getLeftPanelWidth() / 3, true);
+      } else {
+        showCentralPanel(true);
+      }
     }
+
+    // Restore defaults
+    if (rightSidePanel instanceof DMSlidePanelView) {
+      ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
+    }
+    if (leftSidePanel instanceof DMSlidePanelView) {
+      ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
+    }
+
     slideAnimationDuration = oldDuration;
   }
 
