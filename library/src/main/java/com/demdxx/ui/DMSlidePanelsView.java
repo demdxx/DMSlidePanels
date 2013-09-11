@@ -473,7 +473,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected void updateLayout() {
     clearAnimation();
     if (null != leftSidePanel) {
-      if (!sidebarFixed) {
+      if (!sidebarFixed || leftSidePanelTranslation.left >= 0) {
         leftSidePanelTranslation.updateSize(leftSidePanel);
       }
       if (leftSidePanelTranslation.left < 0) {
@@ -481,10 +481,11 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       }
     }
     if (null != rightSidePanel) {
-      if (!sidebarFixed) {
+      int width = getMeasuredWidth();
+      if (!sidebarFixed || rightSidePanelTranslation.right <= width) {
         rightSidePanelTranslation.updateSize(rightSidePanel);
       }
-      if (rightSidePanelTranslation.left >= getMeasuredWidth()) {
+      if (rightSidePanelTranslation.left >= width) {
         rightSidePanel.setVisibility(View.GONE);
       }
     }
