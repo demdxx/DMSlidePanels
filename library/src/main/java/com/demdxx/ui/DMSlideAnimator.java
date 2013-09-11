@@ -24,6 +24,7 @@
  */
 package com.demdxx.ui;
 
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -120,6 +121,7 @@ class DMSlideAnimator extends Animation
         l.width = (right + 0xffffff) - (left + 0xffffff);
         if (l instanceof FrameLayout.LayoutParams) {
           ((FrameLayout.LayoutParams) l).leftMargin = left;
+          ((FrameLayout.LayoutParams) l).gravity = Gravity.LEFT;
         }
         v.requestLayout();
       }

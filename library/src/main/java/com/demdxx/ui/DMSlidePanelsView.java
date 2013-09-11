@@ -27,9 +27,12 @@ package com.demdxx.ui;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
@@ -48,6 +51,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected int swipe = 0; // 0 - none, 1 - arbitrary, 2 - strict
 
   protected GestureDetector gestureDetector;
+
+  protected ContainerListener listener;
 
   public DMSlidePanelsView(Context context) {
     super(context);
@@ -73,7 +78,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     super.onLayout(changed, left, top, right, bottom);
-    if (null != centerPanel) {
+    if (null == centerPanel) {
       initPanels();
     }
   }
@@ -153,6 +158,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     initEvents();
   }
 
+  /**
+   * Init events
+   */
   protected void initEvents() {
     if (1 == swipe) {
       initSwipeEvents();
@@ -255,6 +263,14 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     swipe = type;
     gestureDetector = null;
     initEvents();
+  }
+
+  /**
+   * Set listener container
+   * @param l listener
+   */
+  public void setContainerListener(ContainerListener l) {
+    listener = l;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -455,32 +471,29 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
    * Update position and delete animations from panels
    */
   protected void updateLayout() {
+    clearAnimation();
     if (null != leftSidePanel) {
       if (!sidebarFixed) {
-        leftSidePanelTranslation.update(leftSidePanel);
+        leftSidePanelTranslation.updateSize(leftSidePanel);
       }
-      leftSidePanel.clearAnimation();
       if (leftSidePanelTranslation.left < 0) {
         leftSidePanel.setVisibility(View.GONE);
       }
     }
     if (null != rightSidePanel) {
       if (!sidebarFixed) {
-        rightSidePanelTranslation.update(rightSidePanel);
+        rightSidePanelTranslation.updateSize(rightSidePanel);
       }
-      rightSidePanel.clearAnimation();
       if (rightSidePanelTranslation.left >= getMeasuredWidth()) {
         rightSidePanel.setVisibility(View.GONE);
       }
     }
     if (null != centerPanel) {
-      centerPanelTranslation.update(centerPanel);
-      centerPanel.clearAnimation();
+      centerPanelTranslation.updateSize(centerPanel);
     }
-    clearAnimation();
 
     // End events
-    onAnimationEnd();
+    onAfterShowSidebar();
   }
 
   /**
@@ -590,6 +603,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     if (centerPanel instanceof DMSlidePanelBaseView) {
       ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(!show);
     }
+    if (null != listener) {
+      listener.onSideContainerBeforeShowLeftSidebar(show);
+    }
   }
 
   protected void onBeforeShowRightSidebar(boolean show) {
@@ -601,6 +617,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     }
     if (centerPanel instanceof DMSlidePanelBaseView) {
       ((DMSlidePanelBaseView) centerPanel).onBeforeGoingInto(show);
+    }
+    if (null != listener) {
+      listener.onSideContainerBeforeShowRightSidebar(show);
     }
   }
 
@@ -615,6 +634,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     }
     if (centerPanel instanceof DMSlidePanelBaseView) {
       ((DMSlidePanelBaseView) centerPanel).onAfterGoingInto(!shownLeft && !shownRight);
+    }
+    if (null != listener) {
+      listener.onSideContainerAfterShowSidebar(shownLeft, shownRight);
     }
   }
 
@@ -731,10 +753,12 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Delegate interface
+  /// Listener interface
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  public interface Delegate {
-    // TODO ...
+  public interface ContainerListener {
+    public void onSideContainerBeforeShowLeftSidebar(boolean show);
+    public void onSideContainerBeforeShowRightSidebar(boolean show);
+    public void onSideContainerAfterShowSidebar(boolean isLeft, boolean isRight);
   }
 }
