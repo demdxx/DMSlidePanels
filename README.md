@@ -51,3 +51,5 @@ Example
 </com.demdxx.ui.DMSlidePanelsView>
 ```
 
+http://youtu.be/f_CCqLrKBwo
+<iframe width="560" height="315" src="//www.youtube.com/embed/f_CCqLrKBwo" frameborder="0" allowfullscreen></iframe>
