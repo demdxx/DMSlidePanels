@@ -1,6 +1,5 @@
 .DS_Store
 
-android-filecache-library/
 Libraries/
 build/
 
@@ -32,9 +31,11 @@ proguard/
 gradle/
 
 # Intellij project files
-*.iml
+#*.iml
 *.ipr
 *.iws
 *~
 *.swp
-.idea/
+
+/local.properties
+/.idea/workspace.xml

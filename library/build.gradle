@@ -6,6 +6,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.5.+'
     }
 }
+apply plugin: 'maven'
 apply plugin: 'android-library'
 
 repositories {
@@ -23,4 +24,22 @@ android {
 }
 
 dependencies {
+}
+
+task writeNewPom << {
+    pom {
+        project {
+            inceptionYear '2013'
+            groupId 'com.demdxx.ui'
+            artifactId 'DMSlidePanelsLibrary'
+            version '0.0.1'
+            licenses {
+                license {
+                    name 'MIT'
+                    url 'http://opensource.org/licenses/MIT'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("$buildDir/newpom.xml")
 }
