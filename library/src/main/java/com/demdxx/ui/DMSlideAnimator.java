@@ -118,7 +118,7 @@ class DMSlideAnimator extends Animation
     Translation updateSize(View v) {
       if (null != v) {
         ViewGroup.LayoutParams l = v.getLayoutParams();
-        l.width = (right + 0xffffff) - (left + 0xffffff);
+        l.width = (right + 999999) - (left + 999999);
         if (l instanceof FrameLayout.LayoutParams) {
           ((FrameLayout.LayoutParams) l).leftMargin = left;
           ((FrameLayout.LayoutParams) l).gravity = Gravity.LEFT;

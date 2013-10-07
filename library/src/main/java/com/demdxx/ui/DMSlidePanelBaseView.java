@@ -35,6 +35,7 @@ public abstract class DMSlidePanelBaseView extends FrameLayout
 {
   protected float visibleX1 = 0;
   protected float visibleX2 = 0;
+  protected float leftOffset = 0;
   protected boolean fixed = false;
 
   public DMSlidePanelBaseView(Context context) {
@@ -49,9 +50,10 @@ public abstract class DMSlidePanelBaseView extends FrameLayout
     super(context, attrs, defStyle);
   }
 
-  public void setPanelVisiblePoints(float x1, float x2) {
+  public void setPanelVisiblePoints(float x1, float x2, float lOffset) {
     visibleX1 = x1;
     visibleX2 = x2;
+    leftOffset = lOffset;
   }
 
   public void fixed(boolean state) {
@@ -83,11 +85,11 @@ public abstract class DMSlidePanelBaseView extends FrameLayout
         }
 
         if (left < cl) {
-          setPanelVisiblePoints(left, cl > right ? right : cl);
+          setPanelVisiblePoints(left, cl > right ? right : cl, cl);
         } else if (right > cr) {
-          setPanelVisiblePoints(cr < left ? left : cr, right);
+          setPanelVisiblePoints(cr < left ? left : cr, right, cl);
         } else {
-          setPanelVisiblePoints(0, 0);
+          setPanelVisiblePoints(0, 0, 0);
         }
       }
     }

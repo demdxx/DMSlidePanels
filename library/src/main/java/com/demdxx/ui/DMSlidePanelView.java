@@ -108,8 +108,8 @@ public abstract class DMSlidePanelView extends DMSlidePanelBaseView
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   @Override
-  public void setPanelVisiblePoints(float x1, float x2) {
-    super.setPanelVisiblePoints(x1, x2);
+  public void setPanelVisiblePoints(float x1, float x2, float lOffset) {
+    super.setPanelVisiblePoints(x1, x2, lOffset);
     postInvalidateDelayed(7);
   }
 

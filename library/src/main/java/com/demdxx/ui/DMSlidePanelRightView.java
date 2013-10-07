@@ -68,11 +68,6 @@ public class DMSlidePanelRightView extends DMSlidePanelView
   @Override
   protected int shadowLeftPosition() {
     if (fixed) {
-      int leftOffset = 0;
-      ViewGroup.LayoutParams l = getLayoutParams();
-      if (l instanceof LayoutParams) {
-        leftOffset = ((LayoutParams) l).leftMargin;
-      }
       return (int) (visibleX1 - leftOffset);
     }
     return 0;
