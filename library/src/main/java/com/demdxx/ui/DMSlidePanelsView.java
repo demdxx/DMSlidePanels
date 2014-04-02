@@ -46,7 +46,9 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected boolean sidebarFixed = true;
   protected long slideAnimationDuration = 300;
   protected int swipe = 0; // 0 - none, 1 - arbitrary, 2 - strict
+  protected int activeView = 0; // 0 - center, 1 - left, 2 - right
 
+  protected GestureDetector.SimpleOnGestureListener gestureListener;
   protected GestureDetector gestureDetector;
 
   protected ContainerListener listener;
@@ -134,25 +136,27 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       }
     }
 
-    centerPanel.bringToFront();
+    if (null != centerPanel) {
+      centerPanel.bringToFront();
 
-    if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelView) {
-      ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
+      if (null != rightSidePanel && rightSidePanel instanceof DMSlidePanelView) {
+        ((DMSlidePanelView) rightSidePanel).fixed(sidebarFixed);
+      }
+      if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelView) {
+        ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
+      }
+
+      // Update position
+      getLeftSidePanelTranslation(true).updateSize(leftSidePanel);
+      getRightSidePanelTranslation(true).updateSize(rightSidePanel);
+
+      // Hide sidebars
+      showLeftSideBar(false, false);
+      showRightSideBar(false, false);
+
+      // Init events
+      initEvents();
     }
-    if (null != leftSidePanel && leftSidePanel instanceof DMSlidePanelView) {
-      ((DMSlidePanelView) leftSidePanel).fixed(sidebarFixed);
-    }
-
-    // Update position
-    getLeftSidePanelTranslation(true).updateSize(leftSidePanel);
-    getRightSidePanelTranslation(true).updateSize(rightSidePanel);
-
-    // Hide sidebars
-    showLeftSideBar(false, false);
-    showRightSideBar(false, false);
-
-    // Init events
-    initEvents();
   }
 
   /**
@@ -176,19 +180,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       return;
     }
     // Init gesture director
-    gestureDetector = new GestureDetector(getContext(), new SwipeStrictGesture());
-
-    OnTouchListener touchListener = new OnTouchListener() {
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (MotionEvent.ACTION_UP == motionEvent.getAction()) {
-          updatePanelsPositionAnimation();
-        }
-        return gestureDetector.onTouchEvent(motionEvent);
-      }
-    };
-
-    setOnTouchListener(touchListener);
+    gestureListener = new SwipeStrictGesture();
+    gestureDetector = new GestureDetector(getContext(), gestureListener);
   }
 
   /**
@@ -199,7 +192,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       return;
     }
     // Init gesture director
-    gestureDetector = new GestureDetector(getContext(), new SwipeGestureDetector() {
+    gestureListener = new SwipeGestureDetector() {
       @Override
       public void swipe2Left() {
         if (isLeftSideBarVisible()) {
@@ -217,20 +210,17 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
           showLeftSideBar(true, true);
         }
       }
-    });
-
-    OnTouchListener touchListener = new OnTouchListener() {
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
-        return gestureDetector.onTouchEvent(motionEvent);
-      }
     };
-
-    setOnTouchListener(touchListener);
+    gestureDetector = new GestureDetector(getContext(), gestureListener);
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Getters/Setters
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Set fixed state
+   *
    * @param fixed boolean
    */
   public void setSidebarFixed(boolean fixed) {
@@ -246,6 +236,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Set animation duration
+   *
    * @param duration milliseconds
    */
   public void setSlideAnimationDuration(long duration) {
@@ -254,6 +245,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Set swipe type
+   *
    * @param type 0 - none, 1 - arbitrary, 2 - strict
    */
   public void setSwipe(int type) {
@@ -264,10 +256,33 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Set listener container
+   *
    * @param l listener
    */
   public void setContainerListener(ContainerListener l) {
     listener = l;
+  }
+
+  public View getLeftSidePanel() {
+    return leftSidePanel;
+  }
+
+  public View getRightSidePanel() {
+    return rightSidePanel;
+  }
+
+  public View getCenterPanel() {
+    return centerPanel;
+  }
+
+  protected int panelIndexAtPosition(float x, float y) {
+    if (0 != activeView
+     && x >= centerPanelTranslation.left && x <= centerPanelTranslation.right
+     && y >= centerPanelTranslation.top  && y <= centerPanelTranslation.bottom)
+    {
+      return 0;
+    }
+    return activeView;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,6 +307,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Display left sidebar panel
+   *
    * @param show boolean
    * @param animated boolean
    */
@@ -303,6 +319,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       leftSidePanel.setVisibility(View.VISIBLE);
     }
 
+    activeView = show ? 1 : 0;
+
     onBeforeShowLeftSidebar(show);
     moveSidebars(getLeftSidePanelTranslation(show),
             getRightSidePanelTranslation(false),
@@ -312,6 +330,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Show right sidebar panel
+   *
    * @param show boolean
    * @param animated boolean
    */
@@ -323,6 +342,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       rightSidePanel.setVisibility(View.VISIBLE);
     }
 
+    activeView = show ? 2 : 0;
+
     onBeforeShowRightSidebar(show);
     moveSidebars(getLeftSidePanelTranslation(false),
             getRightSidePanelTranslation(show),
@@ -332,6 +353,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
 
   /**
    * Show central panel
+   *
    * @param animated boolean
    */
   public void showCentralPanel(boolean animated) {
@@ -370,10 +392,12 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
    */
   protected DMSlideAnimator.Translation getLeftSidePanelTranslation(boolean show) {
     DMSlideAnimator.Translation l = new DMSlideAnimator.Translation();
+    View left = getLeftSidePanel();
+    int top = null != left ? left.getTop() : 0;
     if (show) {
-      l.set(0, 0, getLeftPanelWidth(), getMeasuredHeight());
+      l.set(0, top, getLeftPanelWidth(), (top > 0 ? top : 0) + getMeasuredHeight());
     } else {
-      l.set(-getLeftPanelWidth(), 0, 0, getMeasuredHeight());
+      l.set(-getLeftPanelWidth(), top, 0, (top > 0 ? top : 0) + getMeasuredHeight());
     }
     return l;
   }
@@ -387,10 +411,12 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected DMSlideAnimator.Translation getRightSidePanelTranslation(boolean show) {
     int w = getMeasuredWidth();
     DMSlideAnimator.Translation r = new DMSlideAnimator.Translation();
+    View right = getRightSidePanel();
+    int top = null != right ? right.getTop() : 0;
     if (show) {
-      r.set(w - getRightPanelWidth(), 0, w, getMeasuredHeight());
+      r.set(w - getRightPanelWidth(), top, w, (top > 0 ? top : 0) + getMeasuredHeight());
     } else {
-      r.set(w, 0, w + getRightPanelWidth(), getMeasuredHeight());
+      r.set(w, top, w + getRightPanelWidth(), (top > 0 ? top : 0) + getMeasuredHeight());
     }
     return r;
   }
@@ -404,7 +430,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
    */
   protected DMSlideAnimator.Translation getCenterPanelTranslation(boolean show, boolean right) {
     DMSlideAnimator.Translation c = centerPanelTranslation.copy();
-    c.bottom = getMeasuredHeight();
+    c.top = getCenterPanel().getTop();
+    c.bottom = c.top + getMeasuredHeight();
     if (show) {
       c.right = getMeasuredWidth();
       c.left = 0;
@@ -534,18 +561,18 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected void updatePanelsPositionAnimation() {
     long oldDuration = slideAnimationDuration;
     slideAnimationDuration /= 2;
-    if (isLeftSideBarVisible()) {
-      showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 3, true);
-    } else if (isRightSideBarVisible()) {
-      showRightSideBar(getMeasuredWidth() - centerPanelTranslation.right >= getLeftPanelWidth() / 3, true);
+    if (1 == activeView) {
+      showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 1.3f, true);
+    } else if (2 == activeView) {
+      showRightSideBar(getMeasuredWidth() - centerPanelTranslation.right >= getLeftPanelWidth() / 1.3f, true);
     } else {
       // If invisible panels
       int left = centerPanelTranslation.left;
       int right = getMeasuredWidth() - centerPanelTranslation.right;
       if (left > right) {
-        showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 3, true);
+        showLeftSideBar(centerPanelTranslation.left >= getLeftPanelWidth() / 4.0f, true);
       } else if (left < right) {
-        showRightSideBar(right >= getLeftPanelWidth() / 3, true);
+        showRightSideBar(right >= getLeftPanelWidth() / 4.0f, true);
       } else {
         showCentralPanel(true);
       }
@@ -568,6 +595,43 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Events
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  @Override
+  public boolean dispatchTouchEvent (MotionEvent ev) {
+    if (null != gestureDetector) {
+      if (MotionEvent.ACTION_UP == ev.getAction()) {
+        if (gestureListener instanceof SwipeStrictGesture
+        && ((SwipeStrictGesture) gestureListener).isDragged()) {
+          ev.setAction(MotionEvent.ACTION_CANCEL);
+          updatePanelsPositionAnimation();
+        }
+      }
+
+      // Process event
+      gestureDetector.onTouchEvent(ev);
+
+      // Check tap event
+      if (MotionEvent.ACTION_UP == ev.getAction()) {
+        boolean tapFlag;
+        if (gestureListener instanceof SwipeStrictGesture) {
+          tapFlag = ((SwipeStrictGesture) gestureListener).isTap();
+        } else {
+          tapFlag = ((SwipeGestureDetector) gestureListener).isTap();
+        }
+
+        // Display panel
+        if (tapFlag && 0 != activeView) {
+          if (0 == panelIndexAtPosition(ev.getX(), ev.getY())) {
+            showCentralPanel(true);
+            ev.setAction(MotionEvent.ACTION_CANCEL);
+          }
+        } else if (2 == swipe) {
+          updatePanelsPositionAnimation();
+        }
+      }
+    }
+    return super.dispatchTouchEvent(ev);
+  }
 
   @Override
   public void onAnimationStart(Animation animation) {
@@ -643,7 +707,12 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   class SwipeStrictGesture extends GestureDetector.SimpleOnGestureListener {
-    float oldPosition = 0.0f;
+    private static final int SWIPE_MIN_DISTANCE = 5;
+
+    float oldXPosition = 0.0f;
+    float oldYPosition = 0.0f;
+    Boolean horizontalDrag = null;
+    boolean isTap = false;
 
     @Override
     public boolean onDown(MotionEvent e) {
@@ -651,14 +720,50 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       if (null == centerPanel) {
         initPanels();
       }
-      oldPosition = e.getX();
+      oldXPosition = e.getX();
+      oldYPosition = e.getY();
+      horizontalDrag = null;
+      isTap = false;
       return true;
+    }
+
+    public boolean isDragged() {
+      return null != horizontalDrag && horizontalDrag;
+    }
+
+    public boolean isTap() {
+      return isTap;
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+      isTap = true;
+      return super.onSingleTapUp(e);
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+      if (null != horizontalDrag && !horizontalDrag) {
+        return true;
+      }
+
+      // Calculate offset
       int width = getMeasuredWidth();
-      int offset = (int) (e2.getX() - oldPosition);
+      int offset = (int) (e2.getX() - oldXPosition);
+
+      if (null == horizontalDrag) {
+        // Calculate vertical offset
+        int vOffset = (int) Math.abs(oldYPosition - e2.getY());
+        if (vOffset >= SWIPE_MIN_DISTANCE && vOffset > offset) {
+          horizontalDrag = false;
+          return true;
+        }
+        if (Math.abs(offset) >= SWIPE_MIN_DISTANCE) {
+          horizontalDrag = true;
+        } else {
+          return true;
+        }
+      }
 
       // Update central panel
       centerPanelTranslation.left += offset;
@@ -669,8 +774,6 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         centerPanelTranslation.right = width;
         centerPanelTranslation.left = 0;
       }
-
-      centerPanelTranslation.update(centerPanel);
 
       if (!sidebarFixed) {
         // Calc left panel position
@@ -710,10 +813,26 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         } else if (centerPanelTranslation.left < 0 && rightSidePanelTranslation.right > width) {
           rightSidePanelTranslation = getRightSidePanelTranslation(true);
         }
-      }
 
-      oldPosition = e2.getX();
+        // Correct bounds
+        if (centerPanelTranslation.left > leftSidePanelTranslation.right) {
+          centerPanelTranslation.left = leftSidePanelTranslation.right;
+          centerPanelTranslation.right = centerPanelTranslation.left + width;
+        } else if (centerPanelTranslation.right < rightSidePanelTranslation.left) {
+          centerPanelTranslation.right = rightSidePanelTranslation.left;
+          centerPanelTranslation.left = centerPanelTranslation.right - width;
+        }
+      }
+      centerPanelTranslation.update(centerPanel);
+
+      oldXPosition = e2.getX();
+
+      // Restore Y position
+      e2.setLocation(oldXPosition, oldYPosition);
+
+      // Update panels
       updatePanelsPosition();
+
       return true;
     }
   }
@@ -724,13 +843,26 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     private static final int SWIPE_MAX_OFF_PATH = 250;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
+    boolean isTap = false;
+
     public SwipeGestureDetector() {
       super();
     }
 
+    public boolean isTap() {
+      return isTap;
+    }
+
     @Override
     public boolean onDown(MotionEvent e) {
+      isTap = false;
       return true;
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+      isTap = true;
+      return super.onSingleTapUp(e);
     }
 
     @Override
