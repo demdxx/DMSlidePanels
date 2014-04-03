@@ -26,13 +26,16 @@ package com.demdxx.ui;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 
 public class DMSlidePanelsView extends FrameLayout implements Animation.AnimationListener, View.OnClickListener {
   protected View leftSidePanel = null;
@@ -275,14 +278,75 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     return centerPanel;
   }
 
+  /**
+   * Get panel index at position
+   *
+   * @param x coordinate
+   * @param y coordinate
+   * @return 0 - center, 1 - left, 2 - right
+   */
   protected int panelIndexAtPosition(float x, float y) {
     if (0 != activeView
      && x >= centerPanelTranslation.left && x <= centerPanelTranslation.right
-     && y >= centerPanelTranslation.top  && y <= centerPanelTranslation.bottom)
-    {
+     && y >= centerPanelTranslation.top  && y <= centerPanelTranslation.bottom) {
       return 0;
     }
     return activeView;
+  }
+
+  /**
+   * Search view at position
+   *
+   * @param view container
+   * @param cl class of searched view
+   * @param x coordinate
+   * @param y coordinate
+   * @return View or null
+   */
+  protected View viewAtPosition(ViewGroup view, Class cl, float x, float y) {
+    for (int i = view.getChildCount() - 1; i >= 0; i--) {
+      final View child = view.getChildAt(i);
+      if (child == null) {
+        break;
+      }
+      if (View.VISIBLE != child.getVisibility()) {
+        continue;
+      }
+      if (child.getClass() == cl) {
+        Rect rectf = new Rect();
+        if (child.getLocalVisibleRect(rectf)) {
+          rectf.left -= child.getScrollX();
+          rectf.top = getRelativeTop(child);
+          if (rectf.left <= x && rectf.left + rectf.width() >= x && rectf.top <= y && rectf.top + rectf.height() >= y) {
+            return child;
+          }
+        }
+      } else if (child instanceof ViewGroup) {
+        View r = viewAtPosition((ViewGroup) child, cl, x, y);
+        if (null != r) {
+          return r;
+        }
+      }
+    }
+    return null;
+  }
+
+  protected View viewAtPosition(Class cl, float x, float y) {
+    return viewAtPosition(this, cl, x, y);
+  }
+
+  protected int getRelativeLeft(View view) {
+    if (null == view.getParent() || view.getParent() == view.getRootView()) {
+      return view.getLeft();
+    }
+    return view.getLeft() + getRelativeLeft((View) view.getParent());
+  }
+
+  protected int getRelativeTop(View view) {
+    if (null == view.getParent() || view.getParent() == view.getRootView()) {
+      return view.getTop();
+    }
+    return view.getTop() + getRelativeTop((View) view.getParent());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -686,8 +750,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   }
 
   protected void onAfterShowSidebar() {
-    boolean shownLeft = View.VISIBLE == leftSidePanel.getVisibility();
-    boolean shownRight = View.VISIBLE == leftSidePanel.getVisibility();
+    boolean shownLeft = null != leftSidePanel && View.VISIBLE == leftSidePanel.getVisibility();
+    boolean shownRight = null != rightSidePanel && View.VISIBLE == rightSidePanel.getVisibility();
     if (leftSidePanel instanceof DMSlidePanelBaseView) {
       ((DMSlidePanelBaseView) leftSidePanel).onAfterGoingInto(shownLeft);
     }
@@ -759,7 +823,13 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
           return true;
         }
         if (Math.abs(offset) >= SWIPE_MIN_DISTANCE) {
-          horizontalDrag = true;
+          // Check if it horizontal scroll view at position
+          if (null != viewAtPosition(HorizontalScrollView.class, e2.getX(), e2.getY())) {
+            horizontalDrag = false;
+            return true;
+          } else {
+            horizontalDrag = true;
+          }
         } else {
           return true;
         }
