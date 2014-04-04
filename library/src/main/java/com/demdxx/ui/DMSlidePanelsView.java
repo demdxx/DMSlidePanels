@@ -34,8 +34,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DMSlidePanelsView extends FrameLayout implements Animation.AnimationListener, View.OnClickListener {
   protected View leftSidePanel = null;
@@ -303,7 +307,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
    * @param y coordinate
    * @return View or null
    */
-  protected View viewAtPosition(ViewGroup view, Class cl, float x, float y) {
+  protected View viewAtPosition(ViewGroup view, Class[] cl, float x, float y) {
+    List<Class> cls = Arrays.asList(cl);
     for (int i = view.getChildCount() - 1; i >= 0; i--) {
       final View child = view.getChildAt(i);
       if (child == null) {
@@ -312,7 +317,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       if (View.VISIBLE != child.getVisibility()) {
         continue;
       }
-      if (child.getClass() == cl) {
+      if (cls.contains(child.getClass())) {
         Rect rectf = new Rect();
         if (child.getLocalVisibleRect(rectf)) {
           rectf.left -= child.getScrollX();
@@ -331,7 +336,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     return null;
   }
 
-  protected View viewAtPosition(Class cl, float x, float y) {
+  protected View viewAtPosition(Class[] cl, float x, float y) {
     return viewAtPosition(this, cl, x, y);
   }
 
@@ -824,7 +829,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         }
         if (Math.abs(offset) >= SWIPE_MIN_DISTANCE) {
           // Check if it horizontal scroll view at position
-          if (null != viewAtPosition(HorizontalScrollView.class, e2.getX(), e2.getY())) {
+          if (null != viewAtPosition(new Class[]{HorizontalScrollView.class, WebView.class}, e2.getX(), e2.getY())) {
             horizontalDrag = false;
             return true;
           } else {
