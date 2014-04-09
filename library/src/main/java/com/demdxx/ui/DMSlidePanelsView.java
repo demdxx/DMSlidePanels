@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,6 +39,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,6 +61,8 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   protected GestureDetector gestureDetector;
 
   protected ContainerListener listener;
+
+  protected List<Class> noDraggableViews = null;
 
   public DMSlidePanelsView(Context context) {
     super(context);
@@ -221,6 +225,19 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     gestureDetector = new GestureDetector(getContext(), gestureListener);
   }
 
+  @Override
+  public void requestLayout() {
+    super.requestLayout();
+
+    if (null != centerPanelTranslation && centerPanelTranslation.width() != getMeasuredWidth()) {
+      if (isLeftSideBarVisible()) {
+        showLeftSideBar(true, false);
+      } else {
+        showRightSideBar(isRightSideBarVisible(), false);
+      }
+    }
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Getters/Setters
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -302,13 +319,15 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
    * Search view at position
    *
    * @param view container
-   * @param cl class of searched view
+   * @param cls class of searched view
    * @param x coordinate
    * @param y coordinate
    * @return View or null
    */
-  protected View viewAtPosition(ViewGroup view, Class[] cl, float x, float y) {
-    List<Class> cls = Arrays.asList(cl);
+  protected View viewAtPosition(ViewGroup view, List<Class> cls, float x, float y) {
+    if (null == cls) {
+      cls = getNoDraggableViews();
+    }
     for (int i = view.getChildCount() - 1; i >= 0; i--) {
       final View child = view.getChildAt(i);
       if (child == null) {
@@ -327,7 +346,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
           }
         }
       } else if (child instanceof ViewGroup) {
-        View r = viewAtPosition((ViewGroup) child, cl, x, y);
+        View r = viewAtPosition((ViewGroup) child, cls, x, y);
         if (null != r) {
           return r;
         }
@@ -336,7 +355,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
     return null;
   }
 
-  protected View viewAtPosition(Class[] cl, float x, float y) {
+  protected View viewAtPosition(List<Class> cl, float x, float y) {
     return viewAtPosition(this, cl, x, y);
   }
 
@@ -352,6 +371,21 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
       return view.getTop();
     }
     return view.getTop() + getRelativeTop((View) view.getParent());
+  }
+
+  public List<Class> getNoDraggableViews() {
+    if (null == noDraggableViews) {
+      noDraggableViews = Arrays.asList(new Class[]{HorizontalScrollView.class, WebView.class});
+    }
+    return noDraggableViews;
+  }
+
+  public void setNoDraggableViews(List<Class> list) {
+    noDraggableViews = new ArrayList<Class>(list);
+  }
+
+  public void setNoDraggableViews(Class[] list) {
+    noDraggableViews = Arrays.asList(list);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -776,7 +810,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   class SwipeStrictGesture extends GestureDetector.SimpleOnGestureListener {
-    private static final int SWIPE_MIN_DISTANCE = 5;
+    private static final int SWIPE_MIN_DISTANCE = 8;
 
     float oldXPosition = 0.0f;
     float oldYPosition = 0.0f;
@@ -829,7 +863,7 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         }
         if (Math.abs(offset) >= SWIPE_MIN_DISTANCE) {
           // Check if it horizontal scroll view at position
-          if (null != viewAtPosition(new Class[]{HorizontalScrollView.class, WebView.class}, e2.getX(), e2.getY())) {
+          if (null != viewAtPosition(noDraggableViews, e2.getX(), e2.getY())) {
             horizontalDrag = false;
             return true;
           } else {
