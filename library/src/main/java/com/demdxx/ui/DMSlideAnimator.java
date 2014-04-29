@@ -131,5 +131,13 @@ class DMSlideAnimator extends Animation
     Translation copy() {
       return new Translation().set(left, top, right, bottom);
     }
+
+    int width() {
+      return this.right - this.left;
+    }
+
+    int height() {
+      return this.bottom - this.top;
+    }
   }
 }
