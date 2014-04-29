@@ -28,7 +28,7 @@ local.properties
 proguard/
 
 .gradle/
-gradle/
+# gradle/ # gradle wraper
 
 # Intellij project files
 #*.iml

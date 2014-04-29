@@ -1,27 +1,36 @@
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
-    }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:0.9.+'
+  }
 }
+
+//println GradleVersion.current().prettyPrint()
+//
+//assert gradle.gradleVersion >= "1.10" // android plugin 0.9 requires Gradle 1.10, 1.11
+//// after `gradle wrapper` it is possible to use './gradlew build' with Gradle version specified
+//task wrapper(type: Wrapper) {
+//  gradleVersion = '1.11'
+//}
+
 apply plugin: 'android'
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+  compileSdkVersion 19
+  buildToolsVersion "19.0.3"
 
-    defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 16
-    }
+  defaultConfig {
+    minSdkVersion 7
+    targetSdkVersion 19
+  }
 }
 
 dependencies {
-    compile project(':library')
+  compile project(':library')
 }

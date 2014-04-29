@@ -2,12 +2,14 @@
 <com.demdxx.ui.DMSlidePanelsView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:panel="http://schemas.android.com/apk/res-auto/com.demdxx.ui"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/panels"
         panel:duration="300"
         panel:fixed="false"
-        panel:swipe="none">
+        panel:swipe="none"
+        tools:ignore="ResAuto">
   <com.demdxx.ui.DMSlidePanelLeftView android:layout_width="match_parent"
                                       android:layout_height="match_parent">
     <LinearLayout android:orientation="vertical"

@@ -1,45 +1,40 @@
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
-    }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:0.9.+'
+  }
 }
 apply plugin: 'maven'
+//apply plugin: 'maven-publish'
 apply plugin: 'android-library'
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+  compileSdkVersion 19
+  buildToolsVersion "19.0.3"
 
-    defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 16
+  defaultConfig {
+    minSdkVersion 7
+    targetSdkVersion 19
+  }
+}
+
+def libraryAarFile = file('build/libs/library.aar')
+artifacts {
+  archives libraryAarFile
+}
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: "file:$projectDir/../")
+      pom.groupId = 'com.demdxx.ui'
+      pom.artifactId = 'DMSlidePanelsLibrary'
+      pom.version = '0.0.1'
     }
-}
-
-dependencies {
-}
-
-task writeNewPom << {
-    pom {
-        project {
-            inceptionYear '2013'
-            groupId 'com.demdxx.ui'
-            artifactId 'DMSlidePanelsLibrary'
-            version '0.0.1'
-            licenses {
-                license {
-                    name 'MIT'
-                    url 'http://opensource.org/licenses/MIT'
-                    distribution 'repo'
-                }
-            }
-        }
-    }.writeTo("$buildDir/newpom.xml")
+  }
 }
