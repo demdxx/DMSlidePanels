@@ -1,122 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.demdxx.ui.DMSlidePanelsView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:panel="http://schemas.android.com/apk/res-auto/com.demdxx.ui"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/panels"
-        panel:duration="300"
-        panel:fixed="false"
-        panel:swipe="none"
-        tools:ignore="ResAuto">
+<com.demdxx.example.CustomSidePanelsView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:panel="http://schemas.android.com/apk/res-auto/com.demdxx.ui"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:id="@+id/panels"
+  panel:duration="300"
+  panel:fixed="false"
+  panel:swipe="none"
+  tools:ignore="ResAuto">
   <com.demdxx.ui.DMSlidePanelLeftView android:layout_width="match_parent"
                                       android:layout_height="match_parent">
-    <LinearLayout android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:background="#f00">
-      <Button android:id="@+id/button2"
-              android:text="Hide"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content" />
-      <TextView android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:text="Menu item 1" />
-      <TextView android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:text="Menu item 2" />
+    <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#f00">
+      <Button
+        android:id="@+id/button2"
+        android:text="Hide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Menu item 1" />
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Menu item 2" />
     </LinearLayout>
   </com.demdxx.ui.DMSlidePanelLeftView>
-  <com.demdxx.ui.DMSlidePanelRightView android:layout_width="match_parent"
-                                       android:layout_height="match_parent">
-    <LinearLayout android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:background="#ffffbb36">
+  <com.demdxx.ui.DMSlidePanelRightView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    panel:shadow="true"
+    panel:shadowSize="5"
+    panel:blackout="true">
+    <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#ffffbb36">
 
       <AnalogClock
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:id="@+id/analogClock"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/analogClock"/>
     </LinearLayout>
   </com.demdxx.ui.DMSlidePanelRightView>
-  <com.demdxx.ui.DMSlidePanelCenterView android:layout_width="match_parent"
-                                        android:layout_height="match_parent">
-    <LinearLayout android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:background="@android:color/darker_gray">
+  <com.demdxx.ui.DMSlidePanelCenterView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/darker_gray">
 
       <LinearLayout
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_gravity="left|center_vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical">
 
-        <Button android:id="@+id/button_slide"
-                android:text="Slide"
-                android:layout_height="fill_parent"
-                android:layout_width="0dp"
-                android:layout_weight="1"/>
+        <Button
+          android:id="@+id/button_slide"
+          android:text="Slide"
+          android:layout_height="fill_parent"
+          android:layout_width="0dp"
+          android:layout_weight="1"/>
 
         <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1">
         </FrameLayout>
 
         <Button
-                android:layout_width="0dp"
-                android:layout_height="fill_parent"
-                android:text="Slide"
-                android:id="@+id/button_slide_right"
-                android:layout_weight="1"/>
+          android:layout_width="0dp"
+          android:layout_height="fill_parent"
+          android:text="Slide"
+          android:id="@+id/button_slide_right"
+          android:layout_weight="1"/>
       </LinearLayout>
 
       <RadioGroup
-              android:id="@+id/radioGroup"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal">
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:text="None"
-                android:id="@+id/anim1"
-                android:checked="true"/>
+          android:layout_width="wrap_content"
+          android:layout_height="fill_parent"
+          android:text="None"
+          android:id="@+id/anim1"
+          android:checked="true"/>
         <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:text="Arbitrary swipe"
-                android:id="@+id/anim2"
-                android:checked="false"/>
+          android:layout_width="wrap_content"
+          android:layout_height="fill_parent"
+          android:text="Arbitrary swipe"
+          android:id="@+id/anim2"
+          android:checked="false"/>
         <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:text="Strict swipe"
-                android:id="@+id/anim3"
-                android:checked="false"/>
+          android:layout_width="wrap_content"
+          android:layout_height="fill_parent"
+          android:text="Strict swipe"
+          android:id="@+id/anim3"
+          android:checked="false"/>
       </RadioGroup>
 
       <CheckBox
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Fixed panels"
-              android:id="@+id/fixed"
-              android:layout_gravity="left|center_vertical"
-              android:checked="false"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fixed panels"
+        android:id="@+id/fixed"
+        android:layout_gravity="start|center_vertical"
+        android:checked="false"/>
 
       <EditText
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:inputType="numberSigned"
-              android:ems="10"
-              android:id="@+id/duration"
-              android:layout_gravity="left|center_vertical"
-              android:hint="Duration milliseconds"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberSigned"
+        android:ems="10"
+        android:id="@+id/duration"
+        android:layout_gravity="start|center_vertical"
+        android:hint="Duration milliseconds"/>
 
     </LinearLayout>
   </com.demdxx.ui.DMSlidePanelCenterView>
-</com.demdxx.ui.DMSlidePanelsView>
+</com.demdxx.example.CustomSidePanelsView>

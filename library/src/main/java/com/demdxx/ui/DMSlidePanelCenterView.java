@@ -25,9 +25,11 @@
 package com.demdxx.ui;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 
-public class DMSlidePanelCenterView extends DMSlidePanelBaseView
+public class DMSlidePanelCenterView extends DMSlidePanelView
 {
   public DMSlidePanelCenterView(Context context) {
     super(context);
@@ -40,4 +42,13 @@ public class DMSlidePanelCenterView extends DMSlidePanelBaseView
   public DMSlidePanelCenterView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
   }
+
+  @Override
+  protected void onDrawArrow(Canvas canvas, float opennessRatio) { /* ... */ }
+
+  @Override
+  protected GradientDrawable shadowDrawable() { return null; /* ... */ }
+
+  @Override
+  protected int shadowLeftPosition() { return 0; /* ... */ }
 }

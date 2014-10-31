@@ -8,5 +8,8 @@
       <enum name="arbitrary" value="0x0001" />
       <enum name="strict" value="0x0002" />
     </attr>
+    <attr name="blackout" format="boolean" />
+    <attr name="shadow" format="boolean" />
+    <attr name="shadowSize" format="integer" />
   </declare-styleable>
 </resources>

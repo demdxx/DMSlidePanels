@@ -25,6 +25,7 @@
 package com.demdxx.ui;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -34,16 +35,56 @@ import android.view.View;
 
 public abstract class DMSlidePanelView extends DMSlidePanelBaseView
 {
+  /**
+   * Show shadow
+   */
+  protected boolean showShadow = false;
+
+  /**
+   * Shadow size
+   */
+  protected int shadowSize = 0;
+
+  /**
+   * Do blackout in translation
+   */
+  protected boolean blackout = false;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Constructors
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   public DMSlidePanelView(Context context) {
     super(context);
   }
 
   public DMSlidePanelView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    initControl(context, attrs);
   }
 
   public DMSlidePanelView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
+    initControl(context, attrs);
+  }
+
+  /**
+   * Init control params
+   *
+   * @param context Application context
+   * @param attrs   AttributeSet
+   */
+  protected void initControl(Context context, AttributeSet attrs) {
+    if (null != context && null != attrs) {
+      // Set default params
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.DMSidePanelsView);
+      if (null != typedArray) {
+        blackout = typedArray.getBoolean(R.styleable.DMSidePanelsView_blackout, false);
+        showShadow = typedArray.getBoolean(R.styleable.DMSidePanelsView_shadow, false);
+        shadowSize = (int) convertDpToPixel((float) typedArray.getInt(R.styleable.DMSidePanelsView_shadowSize, 7));
+        typedArray.recycle();
+      }
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,25 +92,30 @@ public abstract class DMSlidePanelView extends DMSlidePanelBaseView
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   @Override
+  @SuppressWarnings("NullableProblems")
   protected void dispatchDraw(Canvas canvas) {
     // Draw the children
     super.dispatchDraw(canvas);
 
     if (View.VISIBLE == getVisibility()) {
       final int width = getMeasuredWidth();
-      final int startShadow = shadowLeftPosition();
-
-      canvas.save();
-      canvas.translate(startShadow, 0);
-      GradientDrawable d = shadowDrawable();
-      d.setBounds(0, 0, shadowSize(), getMeasuredHeight());
-      d.draw(canvas);
-      canvas.restore();
 
       if (width != 0) {
-        final float opennessRatio = (width - (visibleX2 - visibleX1)) / (float) width;
-        onDrawPanelOverlay(canvas, opennessRatio);
-        onDrawArrow(canvas, opennessRatio);
+        if (shadowSize > 0 && showShadow) {
+          GradientDrawable d = shadowDrawable();
+          if (null != d) {
+            canvas.save();
+            canvas.translate(shadowLeftPosition(), 0);
+            d.setBounds(0, 0, shadowSize, getMeasuredHeight());
+            d.draw(canvas);
+            canvas.restore();
+          }
+        }
+
+        if (blackout) {
+          onDrawPanelOverlay(canvas, overlayAlpha);
+        }
+        onDrawArrow(canvas, overlayAlpha);
       }
     }
   }
@@ -107,12 +153,6 @@ public abstract class DMSlidePanelView extends DMSlidePanelBaseView
   /// Helpers
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  @Override
-  public void setPanelVisiblePoints(float x1, float x2, float lOffset) {
-    super.setPanelVisiblePoints(x1, x2, lOffset);
-    postInvalidateDelayed(7);
-  }
-
   /**
    * Get shadow gradient
    * @return gradient
@@ -124,12 +164,4 @@ public abstract class DMSlidePanelView extends DMSlidePanelBaseView
    * @return position
    */
   protected abstract int shadowLeftPosition();
-
-  /**
-   * Get shadow size
-   * @return pixels
-   */
-  protected int shadowSize() {
-    return (int) convertDpToPixel(7);
-  }
 }

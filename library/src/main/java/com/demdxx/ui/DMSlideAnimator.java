@@ -24,6 +24,7 @@
  */
 package com.demdxx.ui;
 
+import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 
-class DMSlideAnimator extends Animation
+public class DMSlideAnimator extends Animation
 {
   protected View panelLeft = null;
   protected View panelRight = null;
@@ -45,6 +46,8 @@ class DMSlideAnimator extends Animation
 
   protected Translation panelCenterTranslationStart = null;
   protected Translation panelCenterTranslationEnd = null;
+
+  protected Translation panelCenterTranslationCur = null;
 
   public DMSlideAnimator(
           View pLeft, Translation tLFrom, Translation tLTo,
@@ -69,6 +72,8 @@ class DMSlideAnimator extends Animation
   protected void applyTransformation(float interpolatedTime, Transformation t) {
     super.applyTransformation(interpolatedTime, t);
 
+    panelCenterTranslationCur = panelCenterTranslationStart.translationTo(panelCenterTranslationEnd, interpolatedTime);
+
     applyLayout(interpolatedTime, panelLeft, panelLeftTranslationStart, panelLeftTranslationEnd);
     applyLayout(interpolatedTime, panelRight, panelRightTranslationStart, panelRightTranslationEnd);
     applyLayout(interpolatedTime, panelCenter, panelCenterTranslationStart, panelCenterTranslationEnd);
@@ -76,19 +81,21 @@ class DMSlideAnimator extends Animation
 
   protected void applyLayout(float interpolatedTime, View v, Translation from, Translation to) {
     if (null != v && null != from && null != to) {
-      final float l = (to.left - from.left) * interpolatedTime + from.left;
-      final float t = (to.top - from.top) * interpolatedTime + from.top;
-      final float r = (to.right - from.right) * interpolatedTime + from.right;
-      final float b = (to.bottom - from.bottom) * interpolatedTime + from.bottom;
-      v.layout((int)l, (int)t, (int)r, (int)b);
+      Translation t = from == panelCenterTranslationStart
+        ? panelCenterTranslationCur
+        : from.translationTo(to, interpolatedTime);
+      t.update(v);
 
-      // Calculate panels visible bounds
-      if (v instanceof DMSlidePanelBaseView && panelCenter != v) {
-        float cl = (panelCenterTranslationEnd.left - panelCenterTranslationStart.left)
-                 * interpolatedTime + panelCenterTranslationStart.left;
-        float cr = (panelCenterTranslationEnd.right - panelCenterTranslationStart.right)
-                 * interpolatedTime + panelCenterTranslationStart.right;
-        ((DMSlidePanelBaseView) v).updateByCentralTranslation(l, t, r, b, cl, cr);
+      if (v instanceof DMSlidePanelView) {
+        int w = panelCenterTranslationCur.width();
+        float a = (float) panelCenterTranslationCur.widthOnDisplay(w) / (float) w;
+        //Log.d("Alpha", a+" -> " + (a*0.4f));
+        if (from == panelCenterTranslationStart) {
+          ((DMSlidePanelView) v).setOverlayAlpha(1.f - a);
+        } else {
+          ((DMSlidePanelView) v).setOverlayAlpha(a);
+        }
+        v.postInvalidateDelayed(10);
       }
     }
   }
@@ -97,10 +104,10 @@ class DMSlideAnimator extends Animation
   /// Translation
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  static class Translation {
-    int left, right, top, bottom;
+  public static class Translation {
+    public int left, right, top, bottom;
 
-    Translation set(int left, int top, int right, int bottom) {
+    public Translation set(int left, int top, int right, int bottom) {
       this.left = left;
       this.top = top;
       this.right = right;
@@ -108,36 +115,82 @@ class DMSlideAnimator extends Animation
       return this;
     }
 
-    Translation update(View v) {
+    public float interpolated(Translation from, Translation to, int offset) {
+      if (from.left > to.left) {
+        Translation f = from;
+        from = to;
+        to = f;
+      }
+      return (float)(left+offset-from.left) / (float)(to.left-from.left);
+    }
+
+    protected Translation update(View v) {
       if (null != v) {
         v.layout(left, top, right, bottom);
       }
       return this;
     }
 
-    Translation updateSize(View v) {
+    protected Translation translationTo(Translation to, float interpolatedTime) {
+      return copy().update(this, to, interpolatedTime);
+    }
+
+    protected Translation update(Translation from, Translation to, float interpolatedTime) {
+      this.left = (int)(div(from.left, to.left) * interpolatedTime + from.left);
+      this.top = (int)(div(from.top, to.top) * interpolatedTime + from.top);
+      this.right = (int)(div(from.right, to.right) * interpolatedTime + from.right);
+      this.bottom = (int)(div(from.bottom, to.bottom) * interpolatedTime + from.bottom);
+      return this;
+    }
+
+    protected Translation updateSize(View v) {
       if (null != v) {
         ViewGroup.LayoutParams l = v.getLayoutParams();
         l.width = (right + 999999) - (left + 999999);
         if (l instanceof FrameLayout.LayoutParams) {
           ((FrameLayout.LayoutParams) l).leftMargin = left;
-          ((FrameLayout.LayoutParams) l).gravity = Gravity.LEFT;
+          if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            ((FrameLayout.LayoutParams) l).gravity = Gravity.LEFT;
+          } else {
+            ((FrameLayout.LayoutParams) l).gravity = Gravity.START;
+          }
         }
         v.requestLayout();
       }
       return this;
     }
 
-    Translation copy() {
+    public Translation copy() {
       return new Translation().set(left, top, right, bottom);
     }
 
-    int width() {
-      return this.right - this.left;
+    public int width() {
+      int offset = Math.min(left, right);
+      if (offset > 0) { offset = -offset; }
+      return (right + offset) - (left + offset);
     }
 
-    int height() {
+    public int height() {
       return this.bottom - this.top;
+    }
+
+    public int widthOnDisplay(int displayWidth) {
+      if (displayWidth <= 0) {
+        displayWidth = width();
+      }
+      if (left > 0) {
+        displayWidth -= left;
+      }
+      if (right > displayWidth) {
+        return displayWidth;
+      }
+      return right;
+    }
+
+    protected static int div(int a, int b) {
+      final int m = Math.min(a, b);
+      if (m < 0) { a -= m; b -= m; }
+      return b - a;
     }
   }
 }

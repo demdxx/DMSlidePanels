@@ -28,14 +28,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.widget.FrameLayout;
 
 public abstract class DMSlidePanelBaseView extends FrameLayout
 {
-  protected float visibleX1 = 0;
-  protected float visibleX2 = 0;
-  protected float leftOffset = 0;
+  protected float overlayAlpha = 0.f;
   protected boolean fixed = false;
 
   public DMSlidePanelBaseView(Context context) {
@@ -50,59 +47,24 @@ public abstract class DMSlidePanelBaseView extends FrameLayout
     super(context, attrs, defStyle);
   }
 
-  public void setPanelVisiblePoints(float x1, float x2, float lOffset) {
-    visibleX1 = x1;
-    visibleX2 = x2;
-    leftOffset = lOffset;
+  public void setOverlayAlpha(float v) {
+    overlayAlpha = Math.min(1.f, Math.max(v, 0.f));
   }
 
   public void fixed(boolean state) {
     fixed = state;
   }
 
-  public void updateByCentralTranslation(DMSlideAnimator.Translation cur, DMSlideAnimator.Translation translation)
-  {
-    updateByCentralTranslation(cur.left, cur.top, cur.right, cur.bottom, translation.left, translation.right);
-  }
-
-  public void updateByCentralTranslation(float l, float t, float r, float b, float cl, float cr)
-  {
-    // Calculate panels visible bounds
-    View parent = (View) getParent();
-    if (null != parent) {
-      int curWidth = parent.getWidth();
-      if (r >= 0 && l <= curWidth) {
-        final float left = l < 0 ? 0 : l;
-        final float right = r > curWidth ? curWidth : r;
-
-        if (cl < left) {
-          cl = left;
-        }
-        if (cr > right) {
-          cr = right;
-        } else if (cr < cl) {
-          cr = cl;
-        }
-
-        if (left < cl) {
-          setPanelVisiblePoints(left, cl > right ? right : cl, cl);
-        } else if (right > cr) {
-          setPanelVisiblePoints(cr < left ? left : cr, right, cl);
-        } else {
-          setPanelVisiblePoints(0, 0, 0);
-        }
-      }
-    }
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Events
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  @SuppressWarnings("UnusedParameters")
   protected void onBeforeGoingInto(boolean lead) {
     // ...
   }
 
+  @SuppressWarnings("UnusedParameters")
   protected void onAfterGoingInto(boolean lead) {
     // ...
   }

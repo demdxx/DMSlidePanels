@@ -46,6 +46,10 @@ public class DMSlidePanelLeftView extends DMSlidePanelView
     super(context, attrs, defStyle);
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Draw
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   @Override
   protected void onDrawArrow(Canvas canvas, float opennessRatio) {
     // ...
@@ -66,8 +70,6 @@ public class DMSlidePanelLeftView extends DMSlidePanelView
    */
   @Override
   protected int shadowLeftPosition() {
-    return fixed
-         ? (int) (visibleX2 - shadowSize())
-         : getMeasuredWidth() - shadowSize();
+    return getMeasuredWidth() - shadowSize;
   }
 }

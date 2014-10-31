@@ -28,7 +28,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 
 public class DMSlidePanelRightView extends DMSlidePanelView
 {
@@ -46,6 +45,10 @@ public class DMSlidePanelRightView extends DMSlidePanelView
   public DMSlidePanelRightView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Draw
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   @Override
   protected void onDrawArrow(Canvas canvas, float opennessRatio) {
@@ -67,9 +70,6 @@ public class DMSlidePanelRightView extends DMSlidePanelView
    */
   @Override
   protected int shadowLeftPosition() {
-    if (fixed) {
-      return (int) (visibleX1 - leftOffset);
-    }
     return 0;
   }
 }

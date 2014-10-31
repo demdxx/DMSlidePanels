@@ -3,12 +3,11 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:0.11.+'
+    classpath 'com.android.tools.build:gradle:0.12.2'
   }
 }
 apply plugin: 'maven'
-//apply plugin: 'maven-publish'
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 repositories {
   mavenCentral()
@@ -16,7 +15,7 @@ repositories {
 
 android {
   compileSdkVersion 19
-  buildToolsVersion "19.1.0"
+  buildToolsVersion "21.0.2"
 
   defaultConfig {
     minSdkVersion 7
@@ -28,13 +27,15 @@ def libraryAarFile = file('build/libs/library.aar')
 artifacts {
   archives libraryAarFile
 }
+
+// Upload to maven repository
 uploadArchives {
   repositories {
     mavenDeployer {
       repository(url: "file:$projectDir/../")
       pom.groupId = 'com.demdxx.ui'
       pom.artifactId = 'DMSlidePanelsLibrary'
-      pom.version = '0.0.1'
+      pom.version = '0.1'
     }
   }
 }
