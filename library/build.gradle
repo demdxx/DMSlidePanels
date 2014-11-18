@@ -3,7 +3,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:0.12.2'
+    classpath 'com.android.tools.build:gradle:0.13.2'
   }
 }
 apply plugin: 'maven'
@@ -15,7 +15,7 @@ repositories {
 
 android {
   compileSdkVersion 19
-  buildToolsVersion "21.0.2"
+  buildToolsVersion "21.1.1"
 
   defaultConfig {
     minSdkVersion 7
@@ -35,7 +35,7 @@ uploadArchives {
       repository(url: "file:$projectDir/../")
       pom.groupId = 'com.demdxx.ui'
       pom.artifactId = 'DMSlidePanelsLibrary'
-      pom.version = '0.1'
+      pom.version = '0.1.1'
     }
   }
 }

@@ -12,6 +12,8 @@ import com.demdxx.ui.DMSlidePanelsView;
 
 public class CustomSidePanelsView extends DMSlidePanelsView {
 
+  final static float MAX_SCALE = 0.8f;
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   /// Constructors
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ public class CustomSidePanelsView extends DMSlidePanelsView {
   }
 
   public int getPanelWidth() {
-    return (int)(Math.min(getMeasuredWidth(), getMeasuredHeight())*0.8f);
+    return (int)(Math.min(getMeasuredWidth(), getMeasuredHeight())*MAX_SCALE);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +81,7 @@ public class CustomSidePanelsView extends DMSlidePanelsView {
     float scale = 1.f;
 
     @Override
-    protected DMSlideAnimator.Translation update(View v) {
+    public DMSlideAnimator.Translation update(View v) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
         if (null != v) {
           v.setScaleX(scale);
@@ -90,25 +92,13 @@ public class CustomSidePanelsView extends DMSlidePanelsView {
     }
 
     @Override
-    protected DMSlideAnimator.Translation update(DMSlideAnimator.Translation from, DMSlideAnimator.Translation to, float interpolatedTime) {
+    public DMSlideAnimator.Translation update(DMSlideAnimator.Translation from, DMSlideAnimator.Translation to, float interpolatedTime) {
       super.update(from, to, interpolatedTime);
-      if (from.left < 0 || to.left < 0) {
-        interpolatedTime = ((float) getRightPanelWidth() - (float) right) / (float) getPanelWidth();
-        if (from.left < to.left) {
-          interpolatedTime = 1.f - interpolatedTime;
-        }
-      } else {
-        interpolatedTime = (float) left / (float) getPanelWidth();
-        if (from.left > to.left) {
-          interpolatedTime = 1.f - interpolatedTime;
-        }
-      }
+
       if (from instanceof ItemTranslation && to instanceof ItemTranslation) {
         final float f = ((ItemTranslation) from).scale;
         final float t = ((ItemTranslation) to).scale;
         scale = f + (t - f) * interpolatedTime;
-      } else {
-        scale = 1.f - 0.2f * interpolatedTime;
       }
       return this;
     }
@@ -156,10 +146,10 @@ public class CustomSidePanelsView extends DMSlidePanelsView {
         c.scale = 1.f;
       } else if (right) {
         c.left = -getPanelWidth();
-        c.scale = 0.8f;
+        c.scale = MAX_SCALE;
       } else {
         c.left = getPanelWidth();
-        c.scale = 0.8f;
+        c.scale = MAX_SCALE;
       }
       c.right = getMeasuredWidth() + c.left;
       return c;

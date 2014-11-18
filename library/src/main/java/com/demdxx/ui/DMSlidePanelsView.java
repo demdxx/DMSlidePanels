@@ -1010,12 +1010,6 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         if (centerPanelTranslation.left > 0) {
           leftSidePanel.setVisibility(View.VISIBLE);
           leftSidePanelTranslation.update(leftSidePanel);
-//          if (leftSidePanel instanceof DMSlidePanelBaseView) {
-//            ((DMSlidePanelBaseView) leftSidePanel)
-//              .updateByCentralTranslation(
-//                getLeftSidePanelTranslation(true),
-//                centerPanelTranslation, 1.f);
-//          }
         } else {
           getLeftSidePanelTranslation(false).update(leftSidePanel);
         }
@@ -1025,12 +1019,6 @@ public class DMSlidePanelsView extends FrameLayout implements Animation.Animatio
         if (centerPanelTranslation.right < width) {
           rightSidePanel.setVisibility(View.VISIBLE);
           rightSidePanelTranslation.update(rightSidePanel);
-//          if (rightSidePanel instanceof DMSlidePanelBaseView) {
-//            ((DMSlidePanelBaseView) rightSidePanel)
-//              .updateByCentralTranslation(
-//                getRightSidePanelTranslation(true),
-//                centerPanelTranslation, 1.f);
-//          }
         } else {
           getRightSidePanelTranslation(false).update(rightSidePanel);
         }

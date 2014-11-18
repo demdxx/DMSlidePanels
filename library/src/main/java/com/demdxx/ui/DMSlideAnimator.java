@@ -25,6 +25,7 @@
 package com.demdxx.ui;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,6 +82,7 @@ public class DMSlideAnimator extends Animation
 
   protected void applyLayout(float interpolatedTime, View v, Translation from, Translation to) {
     if (null != v && null != from && null != to) {
+
       Translation t = from == panelCenterTranslationStart
         ? panelCenterTranslationCur
         : from.translationTo(to, interpolatedTime);
@@ -89,7 +91,7 @@ public class DMSlideAnimator extends Animation
       if (v instanceof DMSlidePanelView) {
         int w = panelCenterTranslationCur.width();
         float a = (float) panelCenterTranslationCur.widthOnDisplay(w) / (float) w;
-        //Log.d("Alpha", a+" -> " + (a*0.4f));
+        //Log.d("Alpha", a + " -> " + (a * 0.4f));
         if (from == panelCenterTranslationStart) {
           ((DMSlidePanelView) v).setOverlayAlpha(1.f - a);
         } else {
@@ -124,18 +126,18 @@ public class DMSlideAnimator extends Animation
       return (float)(left+offset-from.left) / (float)(to.left-from.left);
     }
 
-    protected Translation update(View v) {
+    public Translation update(View v) {
       if (null != v) {
         v.layout(left, top, right, bottom);
       }
       return this;
     }
 
-    protected Translation translationTo(Translation to, float interpolatedTime) {
+    public Translation translationTo(Translation to, float interpolatedTime) {
       return copy().update(this, to, interpolatedTime);
     }
 
-    protected Translation update(Translation from, Translation to, float interpolatedTime) {
+    public Translation update(Translation from, Translation to, float interpolatedTime) {
       this.left = (int)(div(from.left, to.left) * interpolatedTime + from.left);
       this.top = (int)(div(from.top, to.top) * interpolatedTime + from.top);
       this.right = (int)(div(from.right, to.right) * interpolatedTime + from.right);
@@ -143,12 +145,14 @@ public class DMSlideAnimator extends Animation
       return this;
     }
 
-    protected Translation updateSize(View v) {
+    public Translation updateSize(View v) {
       if (null != v) {
         ViewGroup.LayoutParams l = v.getLayoutParams();
         l.width = (right + 999999) - (left + 999999);
+        l.height = (bottom + 999999) - (top + 999999);
         if (l instanceof FrameLayout.LayoutParams) {
           ((FrameLayout.LayoutParams) l).leftMargin = left;
+          ((FrameLayout.LayoutParams) l).topMargin = top;
           if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             ((FrameLayout.LayoutParams) l).gravity = Gravity.LEFT;
           } else {
